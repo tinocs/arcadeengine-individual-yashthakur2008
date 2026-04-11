@@ -5,12 +5,8 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-<<<<<<< HEAD
 import java.util.List;
 import java.util.Set;
-=======
- import java.util.Set;
->>>>>>> d0f22889d29df3cb9d43ff8644e79fecc96c1370
 
 import engine.World;
 import javafx.animation.KeyFrame;
@@ -20,11 +16,7 @@ import javafx.scene.control.Label;
 import javafx.scene.input.KeyCode;
 import javafx.util.Duration;
 
-<<<<<<< HEAD
 public class TestWorld extends World {
-=======
-public class  TestWorld extends World {
->>>>>>> d0f22889d29df3cb9d43ff8644e79fecc96c1370
 
 	private static final int WIDTH = 500;
 	private static final int HEIGHT = 300;
