@@ -15,13 +15,13 @@ public abstract class World extends Pane {
 
     private AnimationTimer timer;
     private boolean stopped;
-    private Set<KeyCode> keysPressed;
+    private List<KeyCode> keysPressed;
     private boolean widthInitialized;
     private boolean heightInitialized;
 
     public World() {
         stopped = true;
-        keysPressed = new HashSet<>();
+        keysPressed = new ArrayList<>();
         widthInitialized = false;
         heightInitialized = false;
 
@@ -57,7 +57,7 @@ public abstract class World extends Pane {
 
             @Override
             public void handle(long now) {
-                if (now - lastUpdate < 16_000_000) return;
+                if (now - lastUpdate < 16000000) return;
                 lastUpdate = now;
 
                 act(now);
