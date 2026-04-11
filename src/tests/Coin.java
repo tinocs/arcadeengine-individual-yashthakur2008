@@ -1,5 +1,4 @@
 package tests;
-
 import javafx.scene.image.Image;
 
 public class Coin extends TestActor {
