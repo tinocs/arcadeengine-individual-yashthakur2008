@@ -19,3 +19,4 @@ package.bluej
 .DS_Store
 desktop.ini
 *.swp
+/bin/
