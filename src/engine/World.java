@@ -15,13 +15,13 @@ public abstract class World extends Pane {
 
     private AnimationTimer timer;
     private boolean stopped;
-    private List<KeyCode> keysPressed;
+    private Set<KeyCode> keysPressed;
     private boolean widthInitialized;
     private boolean heightInitialized;
 
     public World() {
         stopped = true;
-        keysPressed = new ArrayList<>();
+        keysPressed = new HashSet<>();
         widthInitialized = false;
         heightInitialized = false;
 

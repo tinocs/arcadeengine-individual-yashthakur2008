@@ -4,6 +4,8 @@ import engine.World;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.KeyCode;
 import javafx.event.EventHandler;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Line;
 import java.util.List;
 
 public class BallWorld extends World {
@@ -44,6 +46,11 @@ public class BallWorld extends World {
         topPaddle.setY(0);
         add(topPaddle);
 
+        Line topBorder = new Line(0, 0, getWidth(), 0);
+        topBorder.setStroke(Color.RED);
+        topBorder.setStrokeWidth(3);
+        getChildren().add(topBorder);
+
         Brick sample = new Brick();
         brickW = sample.getBoundsInLocal().getWidth();
         brickH = sample.getBoundsInLocal().getHeight();
@@ -74,8 +81,9 @@ public class BallWorld extends World {
         switch (style) {
             case "Pyramid":   setupPyramid();   break;
             case "Square":    setupSquare();    break;
-            case "Rick Wall": setupBrickWall(); break;
-            case "Circle":    setupCircle();    break;
+            case "rick Wall": setupBrickWall(); break;
+            case "Circle":     setupCircle();    break;
+            case "Full House": setupFullHouse(); break;
         }
     }
 
@@ -102,11 +110,10 @@ public class BallWorld extends World {
     }
 
     private void setupSquare() {
-        int cols = 8;
-        int rows = 4;
-        double startX = (getWidth() - cols * brickW) / 2;
-        for (int row = 0; row < rows; row++) {
-            for (int col = 0; col < cols; col++) {
+        int size = 6;
+        double startX = (getWidth() - size * brickW) / 2;
+        for (int row = 0; row < size; row++) {
+            for (int col = 0; col < size; col++) {
                 Brick brick = new Brick();
                 brick.setX(startX + col * brickW);
                 brick.setY(80 + row * brickH);
@@ -141,6 +148,20 @@ public class BallWorld extends World {
             brick.setX(centerX + radius * Math.cos(angle) - brickW / 2);
             brick.setY(centerY + radius * Math.sin(angle) - brickH / 2);
             add(brick);
+        }
+    }
+
+    private void setupFullHouse() {
+        int cols = (int)(getWidth() / brickW) + 1;
+        int rows = (int)((getHeight() / 2) / brickH);
+        for (int row = 0; row < rows; row++) {
+            double offset = (row % 2 == 0) ? 0 : brickW / 2;
+            for (int col = 0; col < cols; col++) {
+                Brick brick = new Brick();
+                brick.setX(offset + col * brickW - brickW / 2);
+                brick.setY(row * brickH);
+                add(brick);
+            }
         }
     }
 

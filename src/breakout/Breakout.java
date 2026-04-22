@@ -23,7 +23,7 @@ public class Breakout extends Application {
         label.setFocusTraversable(false);
 
         ComboBox<String> brickStyles = new ComboBox<>();
-        brickStyles.getItems().addAll("Pyramid", "Square", "rick Wall", "Circle");
+        brickStyles.getItems().addAll("Pyramid", "Square", "rick Wall", "Circle", "Full House");
         brickStyles.setValue("Pyramid");
         brickStyles.setFocusTraversable(false);
         brickStyles.setOnAction(e -> {
@@ -43,6 +43,7 @@ public class Breakout extends Application {
             }
         });
 
+        stage.setResizable(false);
         stage.setScene(scene);
         world.start();
         stage.show();
