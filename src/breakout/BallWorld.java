@@ -1,9 +1,14 @@
 package breakout;
 
 import engine.World;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.KeyCode;
 import javafx.event.EventHandler;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import java.util.List;
@@ -14,13 +19,38 @@ public class BallWorld extends World {
     private Paddle topPaddle;
     private double brickW;
     private double brickH;
+    private Score score;
 
     public BallWorld() {
         setPrefSize(600, 500);
+        setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, null, null)));
     }
 
     @Override
     public void onDimensionsInitialized() {
+        Label styleLabel = new Label("Brick Style: ");
+        styleLabel.setStyle("-fx-text-fill: black; -fx-font-size: 13px;");
+
+        ComboBox<String> brickStyleBox = new ComboBox<>();
+        brickStyleBox.getItems().addAll("Pyramid", "Square", "rick Wall", "Circle", "Full House");
+        brickStyleBox.setValue("Pyramid");
+        brickStyleBox.setFocusTraversable(false);
+        brickStyleBox.setOnAction(e -> {
+            setBrickStyle(brickStyleBox.getValue());
+            requestFocus();
+        });
+        brickStyleBox.setOnHidden(e -> requestFocus());
+
+        HBox toolbar = new HBox(5, styleLabel, brickStyleBox);
+        toolbar.setLayoutX(5);
+        toolbar.setLayoutY(5);
+        getChildren().add(toolbar);
+
+        Line topBorder = new Line(0, 40, getWidth(), 40);
+        topBorder.setStroke(Color.RED);
+        topBorder.setStrokeWidth(3);
+        getChildren().add(topBorder);
+
         Ball ball = new Ball();
         ball.setX(getWidth() / 2 - ball.getWidth() / 2);
         ball.setY(getHeight() / 2 - ball.getHeight() / 2);
@@ -43,13 +73,13 @@ public class BallWorld extends World {
 
         topPaddle = new Paddle();
         topPaddle.setX(getWidth() / 2 - topPaddle.getWidth() / 2);
-        topPaddle.setY(0);
+        topPaddle.setY(40);
         add(topPaddle);
 
-        Line topBorder = new Line(0, 0, getWidth(), 0);
-        topBorder.setStroke(Color.RED);
-        topBorder.setStrokeWidth(3);
-        getChildren().add(topBorder);
+        score = new Score();
+        score.setX(getWidth() - 150);
+        score.setY(20);
+        getChildren().add(score);
 
         Brick sample = new Brick();
         brickW = sample.getBoundsInLocal().getWidth();
@@ -76,12 +106,16 @@ public class BallWorld extends World {
         });
     }
 
+    public Score getScore() {
+        return score;
+    }
+
     public void setBrickStyle(String style) {
         clearBricks();
         switch (style) {
-            case "Pyramid":   setupPyramid();   break;
-            case "Square":    setupSquare();    break;
-            case "rick Wall": setupBrickWall(); break;
+            case "Pyramid":    setupPyramid();   break;
+            case "Square":     setupSquare();    break;
+            case "rick Wall":  setupBrickWall(); break;
             case "Circle":     setupCircle();    break;
             case "Full House": setupFullHouse(); break;
         }

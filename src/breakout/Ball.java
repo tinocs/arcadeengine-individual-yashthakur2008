@@ -8,12 +8,14 @@ public class Ball extends Actor {
 
     private double dx;
     private double dy;
+    private boolean atBottom;
 
     public Ball() {
         String path = getClass().getClassLoader().getResource("breakoutresources/ball.png").toString();
         setImage(new Image(path));
         dx = 5;
-        dy = 5;
+        dy = -5;
+        atBottom = false;
     }
 
     @Override
@@ -31,6 +33,13 @@ public class Ball extends Actor {
         }
         if (getY() + getHeight() >= getWorld().getHeight()) {
             dy = -Math.abs(dy);
+            if (!atBottom) {
+                atBottom = true;
+                Score s = ((BallWorld) getWorld()).getScore();
+                s.setScore(s.getScore() - 1000);
+            }
+        } else {
+            atBottom = false;
         }
 
         List<Paddle> paddles = getIntersectingObjects(Paddle.class);
@@ -70,6 +79,8 @@ public class Ball extends Actor {
                 dy = -dy;
             }
             getWorld().remove(brick);
+            Score s = ((BallWorld) getWorld()).getScore();
+            s.setScore(s.getScore() + 100);
         }
     }
 }
