@@ -17,6 +17,7 @@ public class Breakout extends Application {
         stage.setScene(scene);
         world.start();
         stage.show();
+        world.requestFocus();
     }
 
     public static void main(String[] args) {
