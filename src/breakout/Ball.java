@@ -2,6 +2,7 @@ package breakout;
 
 import engine.Actor;
 import javafx.scene.image.Image;
+import java.util.List;
 
 public class Ball extends Actor {
 
@@ -32,9 +33,43 @@ public class Ball extends Actor {
             dy = -Math.abs(dy);
         }
 
-        Paddle paddle = getOneIntersectingObject(Paddle.class);
-        if (paddle != null) {
-            dy = -Math.abs(dy);
+        List<Paddle> paddles = getIntersectingObjects(Paddle.class);
+        for (Paddle p : paddles) {
+            double ballCenterX = getX() + getWidth() / 2;
+            double ballCenterY = getY() + getHeight() / 2;
+            double paddleCenterX = p.getX() + p.getWidth() / 2;
+            double paddleCenterY = p.getY() + p.getHeight() / 2;
+            if (ballCenterX >= p.getX() && ballCenterX <= p.getX() + p.getWidth()) {
+                if (ballCenterY < paddleCenterY) {
+                    dy = -Math.abs(dy);
+                } else {
+                    dy = Math.abs(dy);
+                }
+            } else if (ballCenterY >= p.getY() && ballCenterY <= p.getY() + p.getHeight()) {
+                if (ballCenterX < paddleCenterX) {
+                    dx = -Math.abs(dx);
+                } else {
+                    dx = Math.abs(dx);
+                }
+            } else {
+                dx = -dx;
+                dy = -dy;
+            }
+        }
+
+        List<Brick> bricks = getIntersectingObjects(Brick.class);
+        for (Brick brick : bricks) {
+            double ballCenterX = getX() + getWidth() / 2;
+            double ballCenterY = getY() + getHeight() / 2;
+            if (ballCenterX >= brick.getX() && ballCenterX <= brick.getX() + brick.getWidth()) {
+                dy = -dy;
+            } else if (ballCenterY >= brick.getY() && ballCenterY <= brick.getY() + brick.getHeight()) {
+                dx = -dx;
+            } else {
+                dx = -dx;
+                dy = -dy;
+            }
+            getWorld().remove(brick);
         }
     }
 }
