@@ -2,6 +2,7 @@ package breakout;
 
 import engine.Actor;
 import javafx.scene.image.Image;
+import javafx.scene.media.AudioClip;
 import java.util.List;
 
 public class Ball extends Actor {
@@ -11,6 +12,8 @@ public class Ball extends Actor {
     private boolean atBottom;
     private double startX;
     private double startY;
+    private AudioClip bounceSound;
+    private AudioClip brickSound;
 
     public Ball() {
         String path = getClass().getClassLoader().getResource("breakoutresources/ball.png").toString();
@@ -18,6 +21,8 @@ public class Ball extends Actor {
         dx = 5;
         dy = -5;
         atBottom = false;
+        bounceSound = new AudioClip(getClass().getClassLoader().getResource("breakoutresources/ball_bounce.wav").toExternalForm());
+        brickSound = new AudioClip(getClass().getClassLoader().getResource("breakoutresources/brick_hit.wav").toExternalForm());
     }
 
     public void setStart(double x, double y) {
@@ -47,12 +52,15 @@ public class Ball extends Actor {
 
         if (getX() <= 0) {
             dx = Math.abs(dx);
+            bounceSound.play();
         }
         if (getX() + getWidth() >= getWorld().getWidth()) {
             dx = -Math.abs(dx);
+            bounceSound.play();
         }
         if (getY() <= 40) {
             dy = Math.abs(dy);
+            bounceSound.play();
         }
         if (getY() + getHeight() >= getWorld().getHeight()) {
             dy = -Math.abs(dy);
@@ -70,10 +78,12 @@ public class Ball extends Actor {
         List<Paddle> paddles = getIntersectingObjects(Paddle.class);
         for (Paddle p : paddles) {
             dy = -dy;
+            bounceSound.play();
         }
 
         List<Brick> bricks = getIntersectingObjects(Brick.class);
         for (Brick brick : bricks) {
+            if (brick.isDying()) continue;
             double ballCenterX = getX() + getWidth() / 2;
             double ballCenterY = getY() + getHeight() / 2;
             if (ballCenterX >= brick.getX() && ballCenterX <= brick.getX() + brick.getWidth()) {
@@ -84,7 +94,8 @@ public class Ball extends Actor {
                 dx = -dx;
                 dy = -dy;
             }
-            getWorld().remove(brick);
+            brickSound.play();
+            brick.startDeathAnimation();
             Score s = ((BallWorld) getWorld()).getScore();
             s.setScore(s.getScore() + 100);
         }
