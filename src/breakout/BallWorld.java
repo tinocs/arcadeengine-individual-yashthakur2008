@@ -34,6 +34,7 @@ public class BallWorld extends World {
     private Text livesLabel;
     private boolean isPaused;
     private Text pauseMessage;
+    private boolean isGameOver = false;
 
     public BallWorld() {
         setPrefSize(600, 500);
@@ -104,12 +105,21 @@ public class BallWorld extends World {
         getChildren().add(pauseMessage);
 
         loadLevel(1);
-
+        setOnKeyPressed(e -> {
+            if (isGameOver && e.getCode() == KeyCode.SPACE) {
+                Breakout.showTitleScreen();
+            } else if (isPaused && e.getCode() == KeyCode.SPACE) {
+                isPaused = false;
+                pauseMessage.setVisible(false);
+            }
+        });
         setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
                 requestFocus();
-                if (isPaused) {
+                if (isGameOver) {
+                    Breakout.showTitleScreen();
+                } else if (isPaused) {
                     isPaused = false;
                     pauseMessage.setVisible(false);
                 }
@@ -135,11 +145,16 @@ public class BallWorld extends World {
     public void loseLife() {
         lives--;
         livesLabel.setText("LIVES: " + lives);
+
         if (lives <= 0) {
-            stop();
-            Breakout.showTitleScreen();
+            isPaused = true;
+            isGameOver = true;
+
+            pauseMessage.setText("GAME OVER\nPress SPACE or click to return");
+            pauseMessage.setVisible(true);
         } else {
             isPaused = true;
+            pauseMessage.setText("PRESS SPACE TO CONTINUE");
             pauseMessage.setVisible(true);
         }
     }
@@ -163,7 +178,7 @@ public class BallWorld extends World {
             levelLabel.setText("LEVEL " + lvl);
         }
         isPaused = true;
-        if (pauseMessage != null) pauseMessage.setVisible(true);
+        isGameOver = false;
         String[] data = LEVELS[lvl - 1];
         String[] dims = data[0].split(" ");
         int rows = Integer.parseInt(dims[0]);
@@ -235,6 +250,12 @@ public class BallWorld extends World {
         score.setScore(0);
         resetBalls();
         clearBricks();
+        isPaused = true;
+        isGameOver = false;
+        if (pauseMessage != null) {
+            pauseMessage.setText("PRESS SPACE TO START");
+            pauseMessage.setVisible(true);
+        }
         if (levelLabel != null) {
             levelLabel.setText("FREE PLAY");
         }
@@ -321,7 +342,7 @@ public class BallWorld extends World {
     @Override
     public void act(long now) {
         if (score == null) return;
-        if (isPaused && isKeyPressed(KeyCode.SPACE)) {
+        if (isPaused && !isGameOver && isKeyPressed(KeyCode.SPACE)) {
             isPaused = false;
             pauseMessage.setVisible(false);
         }
@@ -332,9 +353,10 @@ public class BallWorld extends World {
                 resetBalls();
                 loadLevel(level);
             } else {
-                int finalScore = score.getScore();
-                stop();
-                Breakout.showEndScreen(finalScore);
+                isPaused = true;
+                isGameOver = true;
+                pauseMessage.setText("YOU WIN!\nPress SPACE or click to return");
+                pauseMessage.setVisible(true);
             }
         }
     }
