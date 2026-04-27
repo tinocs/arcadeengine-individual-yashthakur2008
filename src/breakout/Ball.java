@@ -37,6 +37,12 @@ public class Ball extends Actor {
 
     @Override
     public void act(long now) {
+        if (((BallWorld) getWorld()).isPaused()) {
+            Paddle p = ((BallWorld) getWorld()).getPaddle();
+            setX(p.getX() + p.getWidth() / 2 - getWidth() / 2);
+            setY(p.getY() - getHeight() - 2);
+            return;
+        }
         move(dx, dy);
 
         if (getX() <= 0) {

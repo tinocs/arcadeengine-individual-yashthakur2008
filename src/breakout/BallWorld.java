@@ -32,6 +32,8 @@ public class BallWorld extends World {
     private boolean inLevelMode;
     private int lives;
     private Text livesLabel;
+    private boolean isPaused;
+    private Text pauseMessage;
 
     public BallWorld() {
         setPrefSize(600, 500);
@@ -39,6 +41,7 @@ public class BallWorld extends World {
         level = 1;
         inLevelMode = true;
         lives = 3;
+        isPaused = true;
     }
 
     @Override
@@ -93,12 +96,23 @@ public class BallWorld extends World {
         livesLabel.setY(28);
         getChildren().add(livesLabel);
 
+        pauseMessage = new Text("PRESS SPACE TO START");
+        pauseMessage.setFont(Font.font(16));
+        pauseMessage.setFill(Color.WHITE);
+        pauseMessage.setX(getWidth() / 2 - 145);
+        pauseMessage.setY(getHeight() / 2 + 60);
+        getChildren().add(pauseMessage);
+
         loadLevel(1);
 
         setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
                 requestFocus();
+                if (isPaused) {
+                    isPaused = false;
+                    pauseMessage.setVisible(false);
+                }
             }
         });
 
@@ -124,7 +138,18 @@ public class BallWorld extends World {
         if (lives <= 0) {
             stop();
             Breakout.showTitleScreen();
+        } else {
+            isPaused = true;
+            pauseMessage.setVisible(true);
         }
+    }
+
+    public boolean isPaused() {
+        return isPaused;
+    }
+
+    public Paddle getPaddle() {
+        return paddle;
     }
 
     public int getLevel() {
@@ -137,6 +162,8 @@ public class BallWorld extends World {
         if (levelLabel != null) {
             levelLabel.setText("LEVEL " + lvl);
         }
+        isPaused = true;
+        if (pauseMessage != null) pauseMessage.setVisible(true);
         String[] data = LEVELS[lvl - 1];
         String[] dims = data[0].split(" ");
         int rows = Integer.parseInt(dims[0]);
@@ -294,7 +321,11 @@ public class BallWorld extends World {
     @Override
     public void act(long now) {
         if (score == null) return;
-        if (inLevelMode && getObjects(Brick.class).isEmpty()) {
+        if (isPaused && isKeyPressed(KeyCode.SPACE)) {
+            isPaused = false;
+            pauseMessage.setVisible(false);
+        }
+        if (inLevelMode && !isPaused && getObjects(Brick.class).isEmpty()) {
             level++;
             if (level <= 2) {
                 score.setScore(0);
