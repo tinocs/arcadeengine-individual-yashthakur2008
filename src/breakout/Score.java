@@ -10,13 +10,13 @@ public class Score extends Text {
 
     public Score() {
         score = 0;
-        setFont(Font.font(24));
-        setFill(Color.BLACK);
+        setFont(Font.font(18));
+        setFill(Color.WHITE);
         updateDisplay();
     }
 
     public void updateDisplay() {
-        setText("Score: " + score);
+        setText("SCORE: " + score);
     }
 
     public int getScore() {

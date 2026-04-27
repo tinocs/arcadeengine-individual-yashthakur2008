@@ -9,10 +9,27 @@ public class Ball extends Actor {
     private double dx;
     private double dy;
     private boolean atBottom;
+    private double startX;
+    private double startY;
 
     public Ball() {
         String path = getClass().getClassLoader().getResource("breakoutresources/ball.png").toString();
         setImage(new Image(path));
+        dx = 5;
+        dy = -5;
+        atBottom = false;
+    }
+
+    public void setStart(double x, double y) {
+        startX = x;
+        startY = y;
+        setX(x);
+        setY(y);
+    }
+
+    public void reset() {
+        setX(startX);
+        setY(startY);
         dx = 5;
         dy = -5;
         atBottom = false;
@@ -28,11 +45,12 @@ public class Ball extends Actor {
         if (getX() + getWidth() >= getWorld().getWidth()) {
             dx = -Math.abs(dx);
         }
-        if (getY() <= 0) {
+        if (getY() <= 40) {
             dy = Math.abs(dy);
         }
         if (getY() + getHeight() >= getWorld().getHeight()) {
             dy = -Math.abs(dy);
+            // only subtract once when it hits the bottom, not every frame
             if (!atBottom) {
                 atBottom = true;
                 Score s = ((BallWorld) getWorld()).getScore();
@@ -44,26 +62,7 @@ public class Ball extends Actor {
 
         List<Paddle> paddles = getIntersectingObjects(Paddle.class);
         for (Paddle p : paddles) {
-            double ballCenterX = getX() + getWidth() / 2;
-            double ballCenterY = getY() + getHeight() / 2;
-            double paddleCenterX = p.getX() + p.getWidth() / 2;
-            double paddleCenterY = p.getY() + p.getHeight() / 2;
-            if (ballCenterX >= p.getX() && ballCenterX <= p.getX() + p.getWidth()) {
-                if (ballCenterY < paddleCenterY) {
-                    dy = -Math.abs(dy);
-                } else {
-                    dy = Math.abs(dy);
-                }
-            } else if (ballCenterY >= p.getY() && ballCenterY <= p.getY() + p.getHeight()) {
-                if (ballCenterX < paddleCenterX) {
-                    dx = -Math.abs(dx);
-                } else {
-                    dx = Math.abs(dx);
-                }
-            } else {
-                dx = -dx;
-                dy = -dy;
-            }
+            dy = -dy;
         }
 
         List<Brick> bricks = getIntersectingObjects(Brick.class);

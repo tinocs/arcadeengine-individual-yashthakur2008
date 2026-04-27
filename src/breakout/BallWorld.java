@@ -1,69 +1,64 @@
 package breakout;
 
 import engine.World;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.KeyCode;
 import javafx.event.EventHandler;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 import java.util.List;
 
 public class BallWorld extends World {
+
+    private static final String[][] LEVELS = {
+        {"5 9", "000010000", "000111000", "001111100", "011111110", "111111111"},
+        {"4 10", "1212121212", "2121212121", "1212121212", "2121212121"}
+    };
 
     private Paddle paddle;
     private Paddle topPaddle;
     private double brickW;
     private double brickH;
     private Score score;
+    private Text levelLabel;
+    private Ball ball1;
+    private Ball ball2;
+    private Ball ball3;
+    private int level;
+    private boolean inLevelMode;
 
     public BallWorld() {
         setPrefSize(600, 500);
-        setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, null, null)));
+        setBackground(new Background(new BackgroundFill(Color.BLACK, null, null)));
+        level = 1;
+        inLevelMode = true;
     }
 
     @Override
     public void onDimensionsInitialized() {
-        Label styleLabel = new Label("Brick Style: ");
-        styleLabel.setStyle("-fx-text-fill: black; -fx-font-size: 13px;");
-
-        ComboBox<String> brickStyleBox = new ComboBox<>();
-        brickStyleBox.getItems().addAll("Pyramid", "Square", "rick Wall", "Circle", "Full House");
-        brickStyleBox.setValue("Pyramid");
-        brickStyleBox.setFocusTraversable(false);
-        brickStyleBox.setOnAction(e -> {
-            setBrickStyle(brickStyleBox.getValue());
-            requestFocus();
-        });
-        brickStyleBox.setOnHidden(e -> requestFocus());
-
-        HBox toolbar = new HBox(5, styleLabel, brickStyleBox);
-        toolbar.setLayoutX(5);
-        toolbar.setLayoutY(5);
-        getChildren().add(toolbar);
-
         Line topBorder = new Line(0, 40, getWidth(), 40);
-        topBorder.setStroke(Color.RED);
-        topBorder.setStrokeWidth(3);
+        topBorder.setStroke(Color.YELLOW);
+        topBorder.setStrokeWidth(2);
         getChildren().add(topBorder);
 
-        Ball ball = new Ball();
-        ball.setX(getWidth() / 2 - ball.getWidth() / 2);
-        ball.setY(getHeight() / 2 - ball.getHeight() / 2);
-        add(ball);
+        Brick sample = new Brick();
+        brickW = sample.getBoundsInLocal().getWidth();
+        brickH = sample.getBoundsInLocal().getHeight();
 
-        Ball ball2 = new Ball();
-        ball2.setX(getWidth() / 4 - ball2.getWidth() / 2);
-        ball2.setY(getHeight() / 3 - ball2.getHeight() / 2);
+        ball1 = new Ball();
+        ball1.setStart(getWidth() / 2 - ball1.getWidth() / 2, getHeight() / 2 - ball1.getHeight() / 2);
+        add(ball1);
+
+        ball2 = new Ball();
+        ball2.setStart(getWidth() / 4 - ball2.getWidth() / 2, getHeight() / 3 - ball2.getHeight() / 2);
         add(ball2);
 
-        Ball ball3 = new Ball();
-        ball3.setX(3 * getWidth() / 4 - ball3.getWidth() / 2);
-        ball3.setY(getHeight() / 3 - ball3.getHeight() / 2);
+        ball3 = new Ball();
+        ball3.setStart(3 * getWidth() / 4 - ball3.getWidth() / 2, getHeight() / 3 - ball3.getHeight() / 2);
         add(ball3);
 
         paddle = new Paddle();
@@ -77,15 +72,18 @@ public class BallWorld extends World {
         add(topPaddle);
 
         score = new Score();
-        score.setX(getWidth() - 150);
-        score.setY(20);
+        score.setX(getWidth() - 210);
+        score.setY(28);
         getChildren().add(score);
 
-        Brick sample = new Brick();
-        brickW = sample.getBoundsInLocal().getWidth();
-        brickH = sample.getBoundsInLocal().getHeight();
+        levelLabel = new Text("LEVEL 1");
+        levelLabel.setFont(Font.font(14));
+        levelLabel.setFill(Color.YELLOW);
+        levelLabel.setX(10);
+        levelLabel.setY(28);
+        getChildren().add(levelLabel);
 
-        setupPyramid();
+        loadLevel(1);
 
         setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
@@ -110,21 +108,96 @@ public class BallWorld extends World {
         return score;
     }
 
-    public void setBrickStyle(String style) {
+    public int getLevel() {
+        return level;
+    }
+
+    public void loadLevel(int lvl) {
         clearBricks();
-        switch (style) {
-            case "Pyramid":    setupPyramid();   break;
-            case "Square":     setupSquare();    break;
-            case "rick Wall":  setupBrickWall(); break;
-            case "Circle":     setupCircle();    break;
-            case "Full House": setupFullHouse(); break;
+        level = lvl;
+        if (levelLabel != null) {
+            levelLabel.setText("LEVEL " + lvl);
         }
+        String[] data = LEVELS[lvl - 1];
+        String[] dims = data[0].split(" ");
+        int rows = Integer.parseInt(dims[0]);
+        int cols = Integer.parseInt(dims[1]);
+        double startX = (getWidth() - cols * brickW) / 2;
+        for (int row = 0; row < rows; row++) {
+            String line = data[row + 1];
+            for (int col = 0; col < cols; col++) {
+                int type = Character.getNumericValue(line.charAt(col));
+                if (type > 0) {
+                    Brick brick = new Brick(type);
+                    brick.setX(startX + col * brickW);
+                    brick.setY(80 + row * brickH);
+                    add(brick);
+                }
+            }
+        }
+    }
+
+    public void jumpToLevel(int lvl) {
+        inLevelMode = true;
+        score.setScore(0);
+        resetBalls();
+        loadLevel(lvl);
+    }
+
+    public void setBallActive(int ballNum, boolean active) {
+        Ball ball = (ballNum == 1) ? ball1 : (ballNum == 2) ? ball2 : ball3;
+        if (active) {
+            if (!getChildren().contains(ball)) {
+                ball.reset();
+                add(ball);
+            }
+        } else {
+            if (getChildren().contains(ball)) {
+                remove(ball);
+            }
+        }
+    }
+
+    public void setPaddleActive(String which, boolean active) {
+        Paddle p = which.equals("top") ? topPaddle : paddle;
+        if (active) {
+            if (!getChildren().contains(p)) {
+                add(p);
+            }
+        } else {
+            if (getChildren().contains(p)) {
+                remove(p);
+            }
+        }
+    }
+
+    private void resetBalls() {
+        ball1.reset();
+        ball2.reset();
+        ball3.reset();
     }
 
     private void clearBricks() {
         List<Brick> bricks = getObjects(Brick.class);
         for (Brick b : bricks) {
             remove(b);
+        }
+    }
+
+    public void setBrickStyle(String style) {
+        inLevelMode = false;
+        score.setScore(0);
+        resetBalls();
+        clearBricks();
+        if (levelLabel != null) {
+            levelLabel.setText("FREE PLAY");
+        }
+        switch (style) {
+            case "Pyramid":    setupPyramid();   break;
+            case "Square":     setupSquare();    break;
+            case "Brick Wall": setupBrickWall(); break;
+            case "Circle":     setupCircle();    break;
+            case "Full House": setupFullHouse(); break;
         }
     }
 
@@ -201,5 +274,18 @@ public class BallWorld extends World {
 
     @Override
     public void act(long now) {
+        if (score == null) return;
+        if (inLevelMode && getObjects(Brick.class).isEmpty()) {
+            level++;
+            if (level <= 2) {
+                score.setScore(0);
+                resetBalls();
+                loadLevel(level);
+            } else {
+                int finalScore = score.getScore();
+                stop();
+                Breakout.showEndScreen(finalScore);
+            }
+        }
     }
 }

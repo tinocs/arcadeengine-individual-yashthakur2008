@@ -10,6 +10,12 @@ public class Brick extends Actor {
         setImage(new Image(path));
     }
 
+    public Brick(int type) {
+        String file = (type == 2) ? "breakoutresources/brick2.png" : "breakoutresources/brick.png";
+        String path = getClass().getClassLoader().getResource(file).toString();
+        setImage(new Image(path));
+    }
+
     @Override
     public void act(long now) {
     }
