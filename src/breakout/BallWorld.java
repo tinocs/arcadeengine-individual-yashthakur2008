@@ -30,12 +30,15 @@ public class BallWorld extends World {
     private Ball ball3;
     private int level;
     private boolean inLevelMode;
+    private int lives;
+    private Text livesLabel;
 
     public BallWorld() {
         setPrefSize(600, 500);
         setBackground(new Background(new BackgroundFill(Color.BLACK, null, null)));
         level = 1;
         inLevelMode = true;
+        lives = 3;
     }
 
     @Override
@@ -83,6 +86,13 @@ public class BallWorld extends World {
         levelLabel.setY(28);
         getChildren().add(levelLabel);
 
+        livesLabel = new Text("LIVES: 3");
+        livesLabel.setFont(Font.font(14));
+        livesLabel.setFill(Color.WHITE);
+        livesLabel.setX(getWidth() / 2 - 40);
+        livesLabel.setY(28);
+        getChildren().add(livesLabel);
+
         loadLevel(1);
 
         setOnMouseClicked(new EventHandler<MouseEvent>() {
@@ -106,6 +116,15 @@ public class BallWorld extends World {
 
     public Score getScore() {
         return score;
+    }
+
+    public void loseLife() {
+        lives--;
+        livesLabel.setText("LIVES: " + lives);
+        if (lives <= 0) {
+            stop();
+            Breakout.showTitleScreen();
+        }
     }
 
     public int getLevel() {

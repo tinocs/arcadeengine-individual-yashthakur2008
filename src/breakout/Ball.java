@@ -55,6 +55,7 @@ public class Ball extends Actor {
                 atBottom = true;
                 Score s = ((BallWorld) getWorld()).getScore();
                 s.setScore(s.getScore() - 1000);
+                ((BallWorld) getWorld()).loseLife();
             }
         } else {
             atBottom = false;
