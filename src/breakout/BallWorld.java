@@ -1,8 +1,12 @@
 package breakout;
 
+import engine.Actor;
 import engine.World;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.event.EventHandler;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
@@ -32,6 +36,7 @@ public class BallWorld extends World {
     private boolean inLevelMode;
     private int lives;
     private Text livesLabel;
+    private ImageView background;
     private boolean isPaused;
     private Text pauseMessage;
     private boolean isGameOver = false;
@@ -47,6 +52,13 @@ public class BallWorld extends World {
 
     @Override
     public void onDimensionsInitialized() {
+        String bgPath = getClass().getClassLoader().getResource("breakoutresources/background.png").toString();
+        background = new ImageView(new Image(bgPath));
+        double bgWidth = background.getBoundsInLocal().getWidth();
+        background.setX((getWidth() - bgWidth) / 2);
+        background.setY(0);
+        getChildren().add(0, background);
+
         Line topBorder = new Line(0, 40, getWidth(), 40);
         topBorder.setStroke(Color.YELLOW);
         topBorder.setStrokeWidth(2);
@@ -81,6 +93,7 @@ public class BallWorld extends World {
         score = new Score();
         score.setX(getWidth() - 210);
         score.setY(28);
+        score.setFill(Color.YELLOW);
         getChildren().add(score);
 
         levelLabel = new Text("LEVEL 1");
@@ -90,9 +103,9 @@ public class BallWorld extends World {
         levelLabel.setY(28);
         getChildren().add(levelLabel);
 
-        livesLabel = new Text("LIVES: 3");
+        livesLabel = new Text("LIVES: " + lives);
         livesLabel.setFont(Font.font(14));
-        livesLabel.setFill(Color.WHITE);
+        livesLabel.setFill(Color.YELLOW);
         livesLabel.setX(getWidth() / 2 - 40);
         livesLabel.setY(28);
         getChildren().add(livesLabel);
@@ -105,7 +118,9 @@ public class BallWorld extends World {
         getChildren().add(pauseMessage);
 
         loadLevel(1);
-        setOnKeyPressed(e -> {
+        requestFocus();
+        setFocusTraversable(true);
+        addEventHandler(KeyEvent.KEY_PRESSED, e -> {
             if (isGameOver && e.getCode() == KeyCode.SPACE) {
                 Breakout.showTitleScreen();
             } else if (isPaused && e.getCode() == KeyCode.SPACE) {
@@ -126,16 +141,6 @@ public class BallWorld extends World {
             }
         });
 
-        setOnMouseMoved(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                requestFocus();
-                if (!isKeyPressed(KeyCode.LEFT) && !isKeyPressed(KeyCode.RIGHT)) {
-                    paddle.setX(event.getX() - paddle.getWidth() / 2);
-                    topPaddle.setX(event.getX() - topPaddle.getWidth() / 2);
-                }
-            }
-        });
     }
 
     public Score getScore() {
@@ -165,6 +170,17 @@ public class BallWorld extends World {
 
     public Paddle getPaddle() {
         return paddle;
+    }
+
+    public void scroll(double dx) {
+        double newBgX = background.getX() - dx;
+        double minX = getWidth() - background.getBoundsInLocal().getWidth();
+        if (newBgX > 0 || newBgX < minX) return;
+        background.setX(newBgX);
+        List<Actor> actors = getObjects(Actor.class);
+        for (Actor a : actors) {
+            a.move(-dx, 0);
+        }
     }
 
     public int getLevel() {
@@ -345,6 +361,16 @@ public class BallWorld extends World {
         if (isPaused && !isGameOver && isKeyPressed(KeyCode.SPACE)) {
             isPaused = false;
             pauseMessage.setVisible(false);
+        }
+        if (isKeyPressed(KeyCode.LEFT) && paddle.getX() <= 5) {
+            scroll(-5);
+            paddle.setX(5);
+            topPaddle.setX(5);
+        }
+        if (isKeyPressed(KeyCode.RIGHT) && paddle.getX() + paddle.getWidth() >= getWidth() - 5) {
+            scroll(5);
+            paddle.setX(getWidth() - paddle.getWidth() - 5);
+            topPaddle.setX(getWidth() - paddle.getWidth() - 5);
         }
         if (inLevelMode && !isPaused && getObjects(Brick.class).isEmpty()) {
             level++;
